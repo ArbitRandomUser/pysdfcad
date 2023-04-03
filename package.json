@@ -1,0 +1,27 @@
+{
+  "name": "sdfcad",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^2.0.0",
+    "svelte": "^3.54.0",
+    "vite": "^4.0.0"
+  },
+  "dependencies": {
+    "@codemirror/lang-cpp": "^6.0.2",
+    "@codemirror/lang-javascript": "^6.1.4",
+    "@codemirror/theme-one-dark": "^6.1.1",
+    "@replit/codemirror-vim": "^6.0.11",
+    "codemirror": "^6.0.1",
+    "gl-matrix": "^3.4.3",
+    "pyodide": "^0.23.0",
+    "svelte-codemirror-editor": "^1.1.0",
+    "svelte-language-server": "^0.15.8"
+  }
+}
