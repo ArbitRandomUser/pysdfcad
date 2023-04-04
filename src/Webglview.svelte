@@ -10,7 +10,7 @@
   import prestring from './assets/shaders/pre.frag?raw'
   import poststring from './assets/shaders/post.frag?raw'
   import {vec3} from 'gl-matrix'
-  export let sdffunction;
+  export let codestring;
   let databuffer;
   let canvas;
   let csize;
@@ -20,25 +20,13 @@
   let theta= 0.0//*(3.1415/180);
   let phi = 45.0//*(3.1415/180);
   let dist = 10.0;
-  let camerapos = [dist*Math.cos(theta*piby180)*Math.cos(phi*piby180),dist*Math.sin(phi*piby180),dist*Math.sin(theta*piby180)*Math.cos(phi*piby180)];
+  let camerapos,lookat;
+  //change camerapos if theta/phi or dist change
+  camerapos = [dist*Math.cos(theta*piby180)*Math.cos(phi*piby180),dist*Math.sin(phi*piby180),dist*Math.sin(theta*piby180)*Math.cos(phi*piby180)];
   let focus = 1.0; 
-  let lookat = [...camerapos]//vec3.length(camerapos);
-  for (let i=0;i<lookat.length;i++){
-    lookat[i] = -1.0*camerapos[i]/vec3.length(camerapos);
-  }
   let moving=false;
   let imgw = 1.0;//width of image plane, height derived from aspect ratio
-  //let csize=[canvas.innerWidth/imgw,canvas.innerHeight/imgw]
   let gl,timeUniform,mouseUniform,csizeUniform,cameraUniform,focusUniform,lookatUniform,imgwUniform,programInfo,buffers,shaderProgram,anim,Data;
-  function getcoords(event){
-    let rect = event.target.getBoundingClientRect();
-    let scaleX = event.target.width/rect.width; 
-    let scaleY = event.target.height/rect.height; 
-    let x = (event.clientX - rect.left)*scaleX; 
-    let y = (rect.bottom-event.clientY)*scaleY; 
-    mousepos[0]=x;
-    mousepos[1]=y;
-  }
 
   function updatedrawing() {
     let t=1.0;
@@ -54,13 +42,17 @@
   }
 
   onMount(()=> {
+    lookat = [...camerapos]//vec3.length(camerapos);
+    for (let i=0;i<lookat.length;i++){
+      lookat[i] = -1.0*camerapos[i]/vec3.length(camerapos);
+    }
     gl = canvas.getContext("webgl2");
     if (gl==null){
       alert("unable to init webgl");
     }
     gl.clearColor(0.0,0.0,0.0,1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
-    let sstring = prestring.concat("\n",sdffunction.concat("\n",poststring)); 
+    let sstring = prestring.concat("\n",codestring.concat("\n",poststring)); 
     shaderProgram = initShaderProgram(gl,vsSource, sstring);
     programInfo = {
       program: shaderProgram,
@@ -95,7 +87,7 @@
 
   function reCompile(){
     //cancelAnimationFrame(anim);
-    let shaderstring = prestring.concat("\n",sdffunction.concat("\n",poststring))
+    let shaderstring = prestring.concat("\n",codestring.concat("\n",poststring))
     //gl.deleteShader(shaderProgram);
     shaderProgram = initShaderProgram(gl,vsSource,shaderstring);
     programInfo = {
@@ -152,6 +144,7 @@
     updatedrawing();
   }
 
+
   function onMouseWheel(e){
     e.preventDefault();
     dist += e.deltaY*0.01;
@@ -159,8 +152,11 @@
     updatedrawing();
   }
 
-  //TODO fix/implment zoom on scroll;
+  function onMouseLeave(){
+    moving=false;
+  }
+
 </script>
 
-  <canvas on:mousemove={onMouseMove} on:mousedown={onMouseDown} on:mouseup={onMouseUp} on:wheel={onMouseWheel}  bind:this={canvas} width="1280" height="720"></canvas>
+  <canvas on:mousemove={onMouseMove} on:mouseleave={onMouseLeave} on:mousedown={onMouseDown} on:mouseup={onMouseUp} on:wheel={onMouseWheel}  bind:this={canvas} width="1280" height="720"></canvas>
 <button on:click={reCompile}> Recompile </button>

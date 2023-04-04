@@ -114,7 +114,7 @@ void main(){
   //grid
   vec3 gr = grid(ro,rd);
   if (gr.z <= marched && gr.z>0.0 && gr.z < 50.0){
-    float thick = 0.0010*sqrt(gr.z);//,0.5);
+    float thick = 0.001*sqrt(gr.z);//,0.5);
     vec2 ll = 2.0-(smoothstep(vec2(-thick),vec2(0.0),(sin2(PI*gr.xy))) + smoothstep(vec2(0.0),vec2(thick),(sin2(PI*gr.xy))));
     col -= ll.x+ll.y;
   }

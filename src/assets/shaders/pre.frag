@@ -9,9 +9,9 @@ uniform float imgw;
 uniform float time;
 uniform vec2 mouse;
 
-uniform Data {
-  float data;
-};
+//uniform Data {
+//  float data;
+//};
 
 
 float smin(float a, float b, float k){

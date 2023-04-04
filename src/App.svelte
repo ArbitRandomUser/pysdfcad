@@ -9,7 +9,7 @@
   import {vim} from "@replit/codemirror-vim";
   import {oneDark} from "@codemirror/theme-one-dark";
   //let sdffunction  = "float sdf(vec3 p){\nreturn smin(p.y+1.0,length(p - vec3(0.0)) - 1.0,1.0);\n}";
-  let sdffunction  = "float sdf(vec3 p){\n float radius = 1.0;  \n vec3 center= vec3(0.0,0.0,0.0); \n return length(p - center ) - radius;\n}";
+  let codestring  = "float sdf(vec3 p){\n float radius = 1.0;  \n vec3 center= vec3(0.0,0.0,0.0); \n return length(p - center ) - radius;\n}";
   let examplecode="\
   <br>\
   <tt>\
@@ -41,9 +41,9 @@
 </script>
 
 <main>
-  <Webglview sdffunction={sdffunction} />
-  <!--<CodeMirror bind:value={sdffunction} lang={cpp()} extensions={vim()} theme={oneDark}></CodeMirror>-->
-  <CodeMirror bind:value={sdffunction} lang={cpp()}  theme={oneDark}></CodeMirror>
+  <Webglview codestring={codestring} />
+  <!--<CodeMirror bind:value={codestring} lang={cpp()} extensions={vim()} theme={oneDark}></CodeMirror>-->
+  <CodeMirror bind:value={codestring} lang={cpp()}  theme={oneDark}></CodeMirror>
   {@html examplecode}
 </main>
 
