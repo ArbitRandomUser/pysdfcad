@@ -30,4 +30,4 @@ function initShaderProgram(gl, vsSource, fsSource) {
   return shaderProgram;
 }
 
-export {initShaderProgram}
+export { initShaderProgram };

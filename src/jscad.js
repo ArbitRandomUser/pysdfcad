@@ -1,3 +1,1 @@
-function sphere(){
-
-}
+function sphere() {}

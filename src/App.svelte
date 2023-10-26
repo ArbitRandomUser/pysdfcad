@@ -1,50 +1,46 @@
 <script>
-  import './app.css'
-  import svelteLogo from './assets/svelte.svg'
-  import Counter from './lib/Counter.svelte'
-  import Webglview from './Webglview.svelte'
+  import "./app.css";
+  import Webglview from "./Webglview.svelte";
   import CodeMirror from "svelte-codemirror-editor";
-  import {javascript} from "@codemirror/lang-javascript";
-  import {cpp} from "@codemirror/lang-cpp";
-  import {vim} from "@replit/codemirror-vim";
-  import {oneDark} from "@codemirror/theme-one-dark";
-  //let sdffunction  = "float sdf(vec3 p){\nreturn smin(p.y+1.0,length(p - vec3(0.0)) - 1.0,1.0);\n}";
-  let codestring  = "float sdf(vec3 p){\n float radius = 1.0;  \n vec3 center= vec3(0.0,0.0,0.0); \n return length(p - center ) - radius;\n}";
-  let examplecode="\
-  <br>\
-  <tt>\
-    float smoothmin(float a,float b,float k)\{<br>\
-      //this function merges two sdfs smoothly<br> \
-      //k is smoothness factor,<br>\
-      float h = max(k-abs(a-b),0.0)/k;<br>\
-      return min(a,b)-h*h*h*k*(1.0/6.0);<br>\
-    \}\
-    <br>\
-    <br>\
-    float plane(vec3 p, float y)\{<br>\
-    //sdf for a plane<br>\
-    return p.y + y; <br>\
-    \}<br> \
-    <br>\
-    float sphere(vec3 p,vec3 c,float r){<br>\
-    //sdf for a sphere<br>\
-    return length(p-c)-r;<br>\
-    }<br>\
-    <br>\
-    float sdf(vec3 p){<br>\
-    float sphere1 = sphere(p,vec3(0.0,1.0*sin(time),-5.0),1.0);<br>\
-    float plane1 = plane(p,1.0);<br>\
-    return smoothmin(sphere1,plane1,1.0);<br>\
-    }<br>\
-  </tt><br>\
-  "
+  import { javascript } from "@codemirror/lang-javascript";
+  import { cpp } from "@codemirror/lang-cpp";
+  import { python } from "@codemirror/lang-python";
+  import { vim } from "@replit/codemirror-vim";
+  import { oneDark } from "@codemirror/theme-one-dark";
+  import { onMount } from "svelte";
+
+  let codestringpython = "addobject(Sphere([0.0,0.0,0.0],1.0))";
+  let codestringshader = `\nfloat sdf(vec3 p){\n float radius = 1.0;  \n vec3 center= vec3(0.0,0.0,0.0); \n return length(p - center) - radius;}\n`;
+
+  let worker = new Worker(new URL("./pyworker.js", import.meta.url), {
+    type: "classic",
+  });
+  worker.onerror = (e) => {
+    console.log("error ", e);
+  };
+  worker.onmessage = (e) => {
+    codestringshader = e.data.shaderstring;
+  };
+
+  onMount(() => {
+    worker.postMessage(codestringpython);
+    //generate_shader(codestringpython);
+  });
+
+  function generate_shader(codestringpython) {
+    worker.postMessage(codestringpython);
+  }
+
+  function reCompile() {
+    console.log("Recompiling")
+    generate_shader(codestringpython);
+  }
 </script>
 
 <main>
-  <Webglview codestring={codestring} />
-  <!--<CodeMirror bind:value={codestring} lang={cpp()} extensions={vim()} theme={oneDark}></CodeMirror>-->
-  <CodeMirror bind:value={codestring} lang={cpp()}  theme={oneDark}></CodeMirror>
-  {@html examplecode}
+  <Webglview codestring={codestringshader} />
+  <button on:click={reCompile}> Recompile </button>
+  <CodeMirror bind:value={codestringpython} lang={python()} theme={oneDark} />
 </main>
 
 <style>

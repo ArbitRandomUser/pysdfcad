@@ -1,12 +1,12 @@
 //sdf def comes before this
 precision highp float;
 #define MIN_HIT_DIST 0.001
-#define MAX_HIT_DIST 1000.0
-#define NO_MARCH_STEPS 1024
+#define MAX_HIT_DIST 100.0
+#define NO_MARCH_STEPS 50
 #define PI 3.1415926535
 
 vec3 calcNormal(vec3  pos){ 
-    const float h = 0.0001;      
+    const float h = 0.001;      
     #define ZERO (int(min(imgw,0.0))) // prevents loop unrolling 
     vec3 n = vec3(0.0);
     //following is from inigos websits
@@ -20,20 +20,17 @@ vec3 calcNormal(vec3  pos){
 
 vec4 ray_march(in vec3 ro, in vec3 rd){
   vec3 curr_pos;
-  float td_traveled = 0.0;
+  float td = 0.0;
   float d;
-  for (int i=0;i<NO_MARCH_STEPS;++i){
-    curr_pos = ro+ td_traveled*rd;
+  for (int i=0;i<NO_MARCH_STEPS && td < MAX_HIT_DIST;++i){
+    curr_pos = ro+ td*rd;
     d = sdf(curr_pos);
     if (d <= MIN_HIT_DIST){
-      return vec4(td_traveled,curr_pos);
+      return vec4(td,curr_pos);
     }
-    if (td_traveled > MAX_HIT_DIST){
-      break;
-    }
-    td_traveled += d;
+    td += d;
   }
-  return vec4(td_traveled,curr_pos);
+  return vec4(td,curr_pos);
 }
 
 float softshadow(in vec3 ro, in vec3 rd, float k){
@@ -63,11 +60,12 @@ vec2 sin2(vec2 a){
 
 void main(){
   //#define SKYBLUE (vec3(0.1,0.7,0.9))
-  #define SKYBLUE 2.0*normalize(vec3(1,7,9))
+  #define SKYBLUE 1.0*normalize(vec3(1,7,9))
   //#define SKYBLUE (vec3(3.0,7.0,4.5))
-  #define SUNYELL (vec3(7.0,4.5,3.0))
+  #define SUNYELL 0.9*(vec3(7.0,4.5,3.0))
   //#define BOURED normalize(vec3(0.7,0.3,0.2))
-  #define BOURED vec3(0.7,0.7,0.7) 
+  //well actually its white, was initially red, 
+  #define BOUCOLOR vec3(1.0,1.0,1.0) 
   //#define BOURED vec3(4.5,3.0,7.0) 
   #define xdir  vec3(1.0,0.0,0.0)
   #define ydir  vec3(0.0,1.0,0.0)
@@ -97,26 +95,45 @@ void main(){
   //float sun_shad = 1.0-step(ray_march(pos+0.001*norm,sun_dir).x,MAX_HIT_DIST);
   float sun_shad = softshadow(pos+0.002*norm,sun_dir,16.0);
   float sky_diffuse = clamp(dot(norm,ydir),0.0,1.0);
-  float sky_shad = softshadow(pos+0.002*norm,ydir,4.0);
+  //float sky_shad = softshadow(pos+0.002*norm,ydir,4.0);
   float bou_diffuse = clamp(dot(norm,vec3(0.0,-1.0,0.0)),0.0,1.0);
-  float bou_shad = softshadow(pos+0.002*norm,-ydir,4.0);
-    //gradient sky
+  //float bou_shad = softshadow(pos+0.002*norm,-ydir,4.0);
+
+  //gradient sky
   vec3 col = vec3(0.65,0.75,0.9) - 0.9*vUV.y;
   //vec3 col = SKYBLUE - 0.9*vUV.y;
   if (marched<MAX_HIT_DIST){
     col = vec3(0.0);
     col += mate*SUNYELL * sun_diffuse * sun_shad;
-    col += mate*SKYBLUE * sky_diffuse * sky_shad; 
-    col += mate*BOURED * bou_diffuse * bou_shad;
+    //col += mate*SKYBLUE * sky_diffuse * sky_shad; 
+    //col += mate*BOUCOLOR * bou_diffuse * bou_shad;
     col += vec3(0.1,0.1,0.1);
   }
 
   //grid
   vec3 gr = grid(ro,rd);
-  if (gr.z <= marched && gr.z>0.0 && gr.z < 50.0){
-    float thick = 0.001*sqrt(gr.z);//,0.5);
-    vec2 ll = 2.0-(smoothstep(vec2(-thick),vec2(0.0),(sin2(PI*gr.xy))) + smoothstep(vec2(0.0),vec2(thick),(sin2(PI*gr.xy))));
-    col -= ll.x+ll.y;
+  if (gr.z <= marched && gr.z>0.0 && gr.z < 100.0){
+    float thick;//thickness of grid
+    float xythick=0.05;//size of axis markings 
+    float planeopacity=0.0;
+    if (abs(gr.x)<xythick || abs(gr.y)<xythick){
+      thick = 0.0010*sqrt(gr.z);
+    }
+    else{
+      thick = 0.0005*sqrt(gr.z);//,0.5);
+    }
+    //TODO this might be very roundabout way of doing this , make it simpler later;
+    vec2 ll = 2.0-planeopacity-(smoothstep(vec2(-thick),vec2(0.0),(sin2(PI*gr.xy))) + smoothstep(vec2(0.0),vec2(thick),(sin2(PI*gr.xy))));
+    //ll.x and ll.y are 1 near grid lines (from -thick to +thich around grid lines), and 0 everywhere else.
+    if (abs(gr.x)<=xythick){
+      col -= 2.0*vec3(0.20,1.0,1.0)*(ll.x+ll.y);
+    }
+    else if (abs(gr.y)<=xythick){
+      col -= 2.0*vec3(1.0,0.20,1.0)*(ll.x+ll.y);
+    }
+    else{
+    col -= 10.0*(ll.x+ll.y);
+    }
   }
   fragColor = vec4(col,1.0);
 }
