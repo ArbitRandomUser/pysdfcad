@@ -9,7 +9,7 @@
   import { oneDark } from "@codemirror/theme-one-dark";
   import { onMount } from "svelte";
 
-  let codestringpython = "addobject(Sphere([0.0,0.0,0.0],1.0))";
+  let codestringpython = "addobject(Sphere(1.0))\naddobject(Elongate(Sphere(1.0),(1.0,0.0,0.0)))"
   let codestringshader = `\nfloat sdf(vec3 p){\n float radius = 1.0;  \n vec3 center= vec3(0.0,0.0,0.0); \n return length(p - center) - radius;}\n`;
 
   let worker = new Worker(new URL("./pyworker.js", import.meta.url), {
@@ -28,6 +28,7 @@
   });
 
   function generate_shader(codestringpython) {
+      console.log(codestringpython);
     worker.postMessage(codestringpython);
   }
 

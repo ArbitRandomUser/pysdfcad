@@ -25,11 +25,19 @@ float box(vec3 p, vec3 b){
   return roundbox(p,b,0.0);
 }
 
-
 float smin(float a, float b, float k){
    float h = max(k-abs(a-b),0.0)/k;
    return min(a,b)-h*h*h*k*(1.0/6.0);
    //return min(a,b)-h*h*h*h*k*(1.0/8.0);
+}
+
+vec3 smoothclamp(vec3 x, vec3 a, vec3 b){
+    return smoothstep(0., 1.0, (x - a)/(b - a))*(b - a) + a;
+}
+
+vec3 softclamp(vec3 x, vec3 a, vec3 b)
+{
+    return smoothstep(0., 1., (2./3.)*(x - a)/(b - a) + (1./6.))*(b - a) + a;
 }
 //sdf definition comes after this
 

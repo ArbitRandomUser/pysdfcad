@@ -9,6 +9,14 @@ uniform float imgw;
 uniform float time;
 uniform vec2 mouse;
 
+vec4 opElongate( in vec3 p, in vec3 h )
+{
+    //return vec4( p-clamp(p,-h,h), 0.0 ); // faster, but produces zero in the interior elongated box
+    vec3 q = abs(p)-h;
+    return vec4( max(q,0.0), min(max(q.x,max(q.y,q.z)),0.0) );
+}
+
+
 float sphere(vec3 p, vec3 c, float r){
     return length(p - c) - r;
     //return 1&2;

@@ -108,7 +108,7 @@
   }
 
   onMount(() => {
-    gl = canvas.getContext("webgl2", { antialias: true }, "true");
+    gl = canvas.getContext("webgl2", { antialias: false }, "true");
     if (gl == null) {
       alert("unable to init webgl");
     }
