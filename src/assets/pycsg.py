@@ -1,5 +1,7 @@
 import inspect
 import json
+import math
+import numpy
 print("pycsg.py loaded")
 
 PI = math.pi

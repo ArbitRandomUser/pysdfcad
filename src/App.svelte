@@ -10,25 +10,43 @@
   import { onMount } from "svelte";
 
   let codestringpython = "addobject(Sphere(1.0))\naddobject(Elongate(Sphere(1.0),(1.0,0.0,0.0)))"
-  let codestringshader = `\nfloat sdf(vec3 p){\n float radius = 1.0;  \n vec3 center= vec3(0.0,0.0,0.0); \n return length(p - center) - radius;}\n`;
+  let codestringshader = `
+float sdf(vec3 p){
+ float radius = 1.0;  
+ vec3 center= vec3(0.0,0.0,0.0); 
+ return length(p - center) - radius;}
+`;
+  let pyodideready = false;
+  let errorMessage = ''; // New state variable for error messages
 
   let worker = new Worker(new URL("./pyworker.js", import.meta.url), {
     type: "classic",
   });
   worker.onerror = (e) => {
     console.log("error ", e);
+    errorMessage = 'Worker error: ' + e.message; // Set error message on worker error
   };
   worker.onmessage = (e) => {
-    codestringshader = e.data.shaderstring;
+      if (e.data.type === 'pyodideready'){
+          console.log("pyodide is ready");
+          pyodideready = true;
+          worker.postMessage(codestringpython);
+      } else if (e.data.shaderstring){
+            codestringshader = e.data.shaderstring;
+            errorMessage = ''; // Clear error message on successful compilation
+      } else if (e.data.error) {
+            errorMessage = e.data.error; // Set error message from worker
+      }
   };
 
   onMount(() => {
-    worker.postMessage(codestringpython);
+    //worker.postMessage(codestringpython);
     //generate_shader(codestringpython);
   });
 
   function generate_shader(codestringpython) {
       console.log(codestringpython);
+      errorMessage = ''; // Clear error message before new compilation attempt
     worker.postMessage(codestringpython);
   }
 
@@ -40,8 +58,14 @@
 
 <main>
   <Webglview codestring={codestringshader} />
-  <button on:click={reCompile}> Recompile </button>
-  <CodeMirror bind:value={codestringpython} lang={python()} theme={oneDark} />
+  <button on:click={reCompile} disabled={!pyodideready}> Recompile </button>
+  {#if !pyodideready}
+    <div class="loading-indicator"></div>
+  {/if}
+  <CodeMirror bind:value={codestringpython} editable={pyodideready} lang={python()} theme={oneDark} />
+  {#if errorMessage}
+    <div class="error-message" style="color: red;">{errorMessage}</div>
+  {/if}
 </main>
 
 <style>

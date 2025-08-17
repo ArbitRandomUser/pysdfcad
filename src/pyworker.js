@@ -4,7 +4,9 @@ async function loadPyodideAndPackages() {
   //self.pyodide = await loadPyodide({fullStdLib: true});
   pyodide = await loadPyodide();
   console.log("pyodide loaded");
+  await self.pyodide.loadPackage(["numpy", "pytz"]);
   await pyodide.runPython(await (await fetch("./assets/pycsg.py")).text());
+  self.postMessage({ type: 'pyodideready' }); // Notify App.svelte that Pyodide is ready    
 }
 let pyodideReadyPromise = loadPyodideAndPackages();
 
