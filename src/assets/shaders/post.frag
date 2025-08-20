@@ -1,8 +1,8 @@
 //sdf def comes before this
 precision highp float;
-#define MIN_HIT_DIST 0.001
-#define MAX_HIT_DIST 100.0
-#define NO_MARCH_STEPS 50
+#define MIN_HIT_DIST 0.0001
+#define MAX_HIT_DIST 1000.0
+#define NO_MARCH_STEPS 1000
 #define PI 3.1415926535
 
 vec3 calcNormal(vec3  pos){ 
@@ -46,6 +46,19 @@ float softshadow(in vec3 ro, in vec3 rd, float k){
   return ret;
 }
 
+float shadow( in vec3 ro, in vec3 rd)
+{
+    float t = 0.0;
+    for( int i=0; i<256 && t<MAX_HIT_DIST; i++ )
+    {
+        float h = sdf(ro + rd*t);
+        if( h<0.001 )
+            return 0.0;
+        t += h;
+    }
+    return 1.0;
+}
+
 vec3 grid(vec3 ro, vec3 rd){
   //returns dist,bool(sorta);
   float td = -ro.y/rd.y ;
@@ -60,12 +73,14 @@ vec2 sin2(vec2 a){
 
 void main(){
   //#define SKYBLUE (vec3(0.1,0.7,0.9))
-  #define SKYBLUE 1.0*normalize(vec3(1,7,9))
+  #define SKYBLUE 1.0*normalize(vec3(1,7,20))
   //#define SKYBLUE (vec3(3.0,7.0,4.5))
   #define SUNYELL 0.9*(vec3(7.0,4.5,3.0))
+  #define MOONBLUE 0.3*vec3(7.0,4.5,3.3) 
   //#define BOURED normalize(vec3(0.7,0.3,0.2))
   //well actually its white, was initially red, 
-  #define BOUCOLOR vec3(1.0,1.0,1.0) 
+  //#define BOUCOLOR vec3(1.0,1.0,1.0) 
+  #define BOUCOLOR 0.1*SUNYELL 
   //#define BOURED vec3(4.5,3.0,7.0) 
   #define xdir  vec3(1.0,0.0,0.0)
   #define ydir  vec3(0.0,1.0,0.0)
@@ -91,13 +106,19 @@ void main(){
   //color, lighting and shadows
   vec3 mate = vec3(0.10);
   vec3 sun_dir = normalize(vec3(1.0,1.0,0.0)); 
+  //vec3 moon_dir = normalize(vec3(0.0,-1.0,-1.0)); 
+  vec3 moon_dir = -sun_dir; 
+
   float sun_diffuse = clamp(dot(norm,sun_dir),0.0,1.0);
+  float moon_diffuse = clamp(dot(norm,moon_dir),0.0,1.0);
   //float sun_shad = 1.0-step(ray_march(pos+0.001*norm,sun_dir).x,MAX_HIT_DIST);
-  float sun_shad = softshadow(pos+0.002*norm,sun_dir,16.0);
+  float sun_shad = softshadow(pos+0.05*norm,sun_dir,8.0);
+  float moon_shad = softshadow(pos+0.05*norm,moon_dir,8.0);
+  //float sun_shad = shadow(pos+0.1*norm,sun_dir);
   float sky_diffuse = clamp(dot(norm,ydir),0.0,1.0);
   //float sky_shad = softshadow(pos+0.002*norm,ydir,4.0);
   float bou_diffuse = clamp(dot(norm,vec3(0.0,-1.0,0.0)),0.0,1.0);
-  //float bou_shad = softshadow(pos+0.002*norm,-ydir,4.0);
+  float bou_shad = softshadow(pos+0.05*norm,-ydir,4.0);
 
   //gradient sky
   vec3 col = vec3(0.65,0.75,0.9) - 0.9*vUV.y;
@@ -105,8 +126,9 @@ void main(){
   if (marched<MAX_HIT_DIST){
     col = vec3(0.0);
     col += mate*SUNYELL * sun_diffuse * sun_shad;
+    col += mate*MOONBLUE * moon_diffuse * moon_shad ;
     //col += mate*SKYBLUE * sky_diffuse * sky_shad; 
-    //col += mate*BOUCOLOR * bou_diffuse * bou_shad;
+    col += mate*BOUCOLOR * bou_diffuse * bou_shad;
     col += vec3(0.1,0.1,0.1);
   }
 

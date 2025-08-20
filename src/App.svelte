@@ -9,7 +9,7 @@
   import { oneDark } from "@codemirror/theme-one-dark";
   import { onMount } from "svelte";
 
-  let codestringpython = "addobject(Sphere(1.0))\naddobject(Elongate(Sphere(1.0),(1.0,0.0,0.0)))"
+  let codestringpython = "addobject(Rounding(Octahedron()))"
   let codestringshader = `
 float sdf(vec3 p){
  float radius = 1.0;  

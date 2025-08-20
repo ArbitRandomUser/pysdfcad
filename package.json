@@ -16,6 +16,7 @@
     "vite": "^4.2.1"
   },
   "dependencies": {
+    "@bitheral/marching-cubes": "^1.4.7",
     "@codemirror/lang-cpp": "^6.0.2",
     "@codemirror/lang-javascript": "^6.1.4",
     "@codemirror/lang-python": "^6.1.2",

@@ -10,25 +10,18 @@ async function loadPyodideAndPackages() {
 }
 let pyodideReadyPromise = loadPyodideAndPackages();
 
-function get_glsl_objects(objects) {
-  //generates sdf of these objects together and assigns it to varname(unique)
-  let varname;
-  varname = `chunk${chunkcount}`; 
-  chunkcount = chunkcount + 1;
-  let prestring = `float ${varname} =`;
-  let midstring = "";
-  let poststring = ";\n";
-  for (let i = 0; i < objects.length; i++) {
-    if (i != objects.length - 1) {
-      midstring = `${midstring} min(${objects[i].shader},`;
-    } else {
-      midstring = `${midstring} ${objects[i].shader} ${")".repeat(
-        objects.length - 1
-      )}`;
-    }
+function buildMinTree(shaders) {
+  if (!shaders || shaders.length === 0) {
+    return "0.0"; // Default for empty set
   }
-  console.log(`${prestring}${midstring}${poststring};`)
-  return `${prestring}${midstring}${poststring};`;
+  if (shaders.length === 1) {
+    return shaders[0];
+  }
+
+  const mid = Math.floor(shaders.length / 2);
+  const leftSide = buildMinTree(shaders.slice(0, mid));
+  const rightSide = buildMinTree(shaders.slice(mid));
+  return `min(${leftSide}, ${rightSide})`;
 }
 
 let trigcount=0;
@@ -40,33 +33,12 @@ onmessage = async (event) => {
     await pyodide.runPython("clearobjects()");
     await pyodide.runPython(event.data);
     let results = await pyodide.runPython("makescenejson()");
-    let prestring = "float sdf(vec3 pcoord){\n";
-    let poststring = ";}\n";
     res = JSON.parse(results);
-    let pcoordshaders = res["pcoords"]
-
-    let objectstrings = res["objects"];
-    let objects = [];
-    no_objects = objectstrings.length;
-    for (let i = 0; i < no_objects; i++) {
-      objects.push(JSON.parse(objectstrings[i]));
-    }
-    let midstring = "";
-    let chunksize = 100;
-    for (let i=0;i<no_objects;i=i+chunksize){
-      midstring = `${midstring} ${get_glsl_objects(objects.slice(i,i+chunksize))}`;
-    }
-    let midstring2 = "return ";
-    for (let i=0;i<chunkcount;i++){
-      if (i!=chunkcount-1){
-      midstring2 = `${midstring2} min(chunk${i},`;
-      }else{
-        midstring2 = `${midstring2} chunk${i} ${")".repeat(chunkcount-1)}` ;
-      }
-    }
-    shaderstring = `${prestring} ${pcoordshaders} ${midstring} ${midstring2} ${poststring}`;
-    console.log(shaderstring);
-    postMessage({ objects: objects, shaderstring: shaderstring });
+    midstring = res['shader']
+    
+    shaderstring = midstring;
+    //console.log(shaderstring);
+    postMessage({ shaderstring: shaderstring });
   } catch (error) {
     postMessage({ error: error.message });
   }
