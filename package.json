@@ -16,7 +16,6 @@
     "vite": "^4.2.1"
   },
   "dependencies": {
-    "@bitheral/marching-cubes": "^1.4.7",
     "@codemirror/lang-cpp": "^6.0.2",
     "@codemirror/lang-javascript": "^6.1.4",
     "@codemirror/lang-python": "^6.1.2",
@@ -24,6 +23,7 @@
     "@replit/codemirror-vim": "^6.0.11",
     "codemirror": "^6.0.1",
     "gl-matrix": "^3.4.3",
+    "marching-cubes-fast": "^0.0.172",
     "svelte-codemirror-editor": "^1.1.0",
     "svelte-language-server": "^0.15.8"
   }
