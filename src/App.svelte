@@ -11,6 +11,7 @@
   import { generateSTL } from "./stlgenerator.js";
   import { runMarchingCubes } from "./marchingcubes.js";
   import defaultpython from "./default.py?raw"
+  import { fade, slide } from 'svelte/transition';
 
   let codestringpython = defaultpython 
   let codestringshader = `
@@ -20,6 +21,11 @@ float sdf(vec3 p){
 `;
   let pyodideready = false;
   let errorMessage = ''; 
+  let editorVisible = true;
+
+  function toggleEditor() {
+    editorVisible = !editorVisible;
+  }
 
   let worker = new Worker(new URL("./pyworker.js", import.meta.url), {
     type: "classic",
@@ -74,34 +80,37 @@ float sdf(vec3 p){
 </script>
 
 <main>
-    Design stuff with python in your browser; 
-    STL generation is not high resolution for now (will be fixed);
-  <div class="side-by-side">
-    <div class="editor-panel">
+    <div class="side-by-side" >
+    {#if editorVisible}
+    <div class="editor-panel" transition:slide={{ axis: 'x'}}>
         <div class="codemirror-wrapper">
             <CodeMirror bind:value={codestringpython} editable={pyodideready} lang={python()} theme={oneDark} />
         </div>
         {#if errorMessage}
-          <div class="error-message" style="color: red;">{errorMessage}</div>
+          <div transition:slide class="error-message" style="color: red;">{errorMessage}</div>
         {/if}
     </div>
-    <div class="view-panel">
+    {/if}
+    <div class="view-panel" class:editor-hidden={!editorVisible}>
         <Webglview codestring={codestringshader} />
-        <button on:click={reCompile} disabled={!pyodideready}> Recompile </button>
-        <button on:click={generateSTLFile} disabled={!pyodideready}>Generate STL</button>
+        <div class="controls">
+          <button on:click={reCompile} disabled={!pyodideready}> Recompile </button>
+          <button on:click={generateSTLFile} disabled={!pyodideready}>Generate STL</button>
+          <button on:click={toggleEditor}>
+          {#if editorVisible}Hide Editor{:else}Show Editor{/if}
+        </button>
         {#if !pyodideready}
           <div class="loading-indicator"></div>
         {/if}
+        </div>
+        Design stuff with python in your browser; 
+        STL generation is not high resolution for now (will be fixed);
     </div>
   </div>
 </main>
 
 <style>
   main {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
   }
 
   .header {
@@ -112,58 +121,60 @@ float sdf(vec3 p){
   .side-by-side {
     flex-grow: 1;
     display: flex;
-    gap: 16px;
+    gap: 10px;
     overflow: hidden;
     min-height: 0;
   }
 
+  .side-by-side.editor-hidden {
+      justify-content:center;
+  }
+
   .editor-panel {
+    position:absolute;
+    top:10px;
+    left:10px;
     width: 35%;
     max-width: 35% !important;
     flex-direction: column;
-    min-width: 35%;
     min-height: 0;
   }
 
   .view-panel {
-    flex-grow: 0;
+    flex-grow: 1;
     display: flex;
     flex-direction: column;
-    min-width: 65% !important;
   }
-  
+
   .codemirror-wrapper {
     flex-grow: 1; 
     position: relative; 
   }
 
   :global(.cm-editor) {
-      
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 100%;
-      width: 100%;
+      position: relative;
+      height: 100vh;
+      max-height:1000px;
+      width: 35vw;
   }
 
   :global(.cm-scroller) {
-      
       overflow: auto !important;
+      overflow-y: auto;
   }
  
 
   .error-message {
+      position: absolute;
+      top: 0;
+      right: 0;
     flex-shrink: 0;
-    max-height: 150px;
     max-width: 35%;
-    overflow-y: auto;
-    margin-top: 10px;
   }
   
   .controls {
     display: flex;
+    justify-content:right;
     gap: 10px;
     align-items: center;
     padding-top: 10px;
