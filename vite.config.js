@@ -10,7 +10,7 @@ export default defineConfig({
   //    'Cross-Origin-Opener-Policy': 'same-origin',
   //  },
   //}
-  //base: "/thangs/sdfcsg"
+  base: "/thangs/pysdfcad"
 });
 
 const config = {
