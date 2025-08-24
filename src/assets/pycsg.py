@@ -74,8 +74,9 @@ def indentglsl(code,lvl=1):
     #return ind+code.replace("\n",f"\n{ind}")
     return "".join(f"{ind}{c}\n" for c in code.rstrip().split("\n"))
 
-def addobject(obj):
-    __all_objects__.append(obj);
+def addobject(*objs):
+    for obj in objs:
+        __all_objects__.append(obj);
 
 class SObject:
     def __init__(self):
@@ -84,13 +85,13 @@ class SObject:
     def makejson(self):
         return json.dumps(self.__dict__)
     def move(self,x,y,z):
-        return Position(self,translation(x,y,z))
+        return Position(self,Translation(x,y,z))
     def rotx(self,theta):
-        return Position(self,rotx(theta))
+        return Position(self,Rotx(theta))
     def roty(self,theta):
-        return Position(self,roty(theta))
+        return Position(self,Roty(theta))
     def rotz(self,theta):
-        return Position(self,rotz(theta))
+        return Position(self,Rotz(theta))
     def pos(self,LT):
         """
         `obj.pos(LT)`
@@ -98,10 +99,21 @@ class SObject:
         LT is 4x4 matrix , you can use Rotx, Roty and Rotz etc 
         """
         return Position(self,LT)
-
-
+    def rounding(self,r=0.1):
+        """
+            return an object that is rounded from this 
+        """
+        return Rounding(self,r)
+    def twist(self,k=1.0):
+        """
+            twist object
+        """
+        return Twist(self,k)
+    def bend(self,k=1.0):
+        return Bend(self,k)
+    def scale(self,f=1.0):
+        return Scale(self,f)
 O=[0.0,0.0,0.0]
-
 
 ## primitives
 class Sphere(SObject):
@@ -342,14 +354,14 @@ class HexPrism(SObject):
     ```
     Hex prism of "radius" r and thickness t
     """
-    def __init__(self,r=1.0,t=1.0):
+    def __init__(self,h=1.0,t=1.0):
         super().__init__()
         self.h=h
         self.t=t
     def gen_glsl(self,p,tr):
         ht = [self.h,self.t]
         ht = ", ".join(glslfloat(a) for a in ht)
-        code = f"{tr} = hexprism({p},vec2({h}))"
+        code = f"{tr} = hexprism({p},vec2({ht}))"
         return code
        
 class TriPrism(SObject):
@@ -556,10 +568,14 @@ class SmoothIntersect(Intersect):
 
 class Subtract(SObject):
     """
+        ```
+            Subtract(obj1,obj2)
+        ```
+        Subtract first 
     """
-    def __init__(self,*objlist,sm=False,k=0.1):
+    def __init__(self,obj1,obj2,sm=False,k=0.1):
         super().__init__()
-        self.children=objlist
+        self.children=[obj2,obj1]
         self.sm=sm
         self.k=k
 
@@ -635,6 +651,27 @@ class Position(SObject):
         codestart = "{//Position\n"
         code_end = "}"
         return codestart+code+code_end
+
+class Scale(SObject):
+    """
+        `Scale(object,f=1.0)`
+        scale the object by factor f
+    """
+    def __init__(self,sobject,f):
+        self.f=f
+        self.child = sobject 
+    def gen_glsl(self,p,tr):
+        f = glslfloat(self.f)
+        pnew = "p_"+genvar()
+        code = "{\n"
+        code += f"vec3 {pnew} = {p}/{f};\n" 
+        code += f"{self.child.gen_glsl(pnew,tr)};\n"
+        code += f"{tr} = {tr}*{f};\n"
+        code += "}"
+        return code
+
+
+
 
 class Bend(SObject):
     """
