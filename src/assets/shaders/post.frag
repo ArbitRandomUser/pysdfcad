@@ -112,13 +112,13 @@ void main(){
   float sun_diffuse = clamp(dot(norm,sun_dir),0.0,1.0);
   float moon_diffuse = clamp(dot(norm,moon_dir),0.0,1.0);
   //float sun_shad = 1.0-step(ray_march(pos+0.001*norm,sun_dir).x,MAX_HIT_DIST);
-  float sun_shad = softshadow(pos+0.05*norm,sun_dir,8.0);
-  float moon_shad = softshadow(pos+0.05*norm,moon_dir,8.0);
+  float sun_shad = softshadow(pos+0.02*norm,sun_dir,4.0);
+  float moon_shad = softshadow(pos+0.02*norm,moon_dir,4.0);
   //float sun_shad = shadow(pos+0.1*norm,sun_dir);
   float sky_diffuse = clamp(dot(norm,ydir),0.0,1.0);
   //float sky_shad = softshadow(pos+0.002*norm,ydir,4.0);
   float bou_diffuse = clamp(dot(norm,vec3(0.0,-1.0,0.0)),0.0,1.0);
-  float bou_shad = softshadow(pos+0.05*norm,-ydir,4.0);
+  float bou_shad = softshadow(pos+0.02*norm,-ydir,4.0);
 
   //gradient sky
   vec3 col = vec3(0.65,0.75,0.9) - 0.9*vUV.y;

@@ -7,12 +7,11 @@ PI = math.pi
 varno=1
 
 __all_objects__ = [] #objects are added to this list
-__all_coords__ = []
 
 def glslfloat(m,d=10): ##CHANGE d to 10 , its 2 for DEBUG only !!!
     return f"{m:.{d}f}"
 
-def rotx(angle_rad):
+def Rotx(angle_rad):
     """ Creates a 4x4 rotation matrix for the X-axis. """
     c = np.cos(angle_rad)
     s = np.sin(angle_rad)
@@ -25,7 +24,7 @@ def rotx(angle_rad):
         [0,  0,  0,  1]
     ], dtype=np.float32)
 
-def roty(angle_rad):
+def Roty(angle_rad):
     """ Creates a 4x4 rotation matrix for the Y-axis. """
     c = np.cos(angle_rad)
     s = np.sin(angle_rad)
@@ -38,7 +37,7 @@ def roty(angle_rad):
         [0,  0,  0,  1]
     ], dtype=np.float32)
 
-def rotz(angle_rad):
+def Rotz(angle_rad):
     """ Creates a 4x4 rotation matrix for the Z-axis. """
     c = np.cos(angle_rad)
     s = np.sin(angle_rad)
@@ -51,7 +50,7 @@ def rotz(angle_rad):
         [0,  0,  0,  1]
     ], dtype=np.float32)
 
-def translation(x=0, y=0, z=0):
+def Translation(x=0, y=0, z=0):
     """ Creates a 4x4 translation matrix. """
     return np.array([
         [1, 0, 0, x],
@@ -92,7 +91,12 @@ class SObject:
         return Position(self,roty(theta))
     def rotz(self,theta):
         return Position(self,rotz(theta))
-    def applyLT(self,LT):
+    def pos(self,LT):
+        """
+        `obj.pos(LT)`
+        apply linear transformation matrix LT, 
+        LT is 4x4 matrix , you can use Rotx, Roty and Rotz etc 
+        """
         return Position(self,LT)
 
 
@@ -172,12 +176,12 @@ class Torus(SObject):
 
 class CappedTorus(SObject):
     """
-    ```
-    CappedTorus(theta=PI/3,ra=1.0,t=0.3)
-    theta: angle end points of cappings make with the center of torus
-    ra: inner radius
-    t: thickness
-    ```
+        ```
+        CappedTorus(theta=PI/3,ra=1.0,t=0.3)
+        theta: angle end points of cappings make with the center of torus
+        ra: inner radius
+        t: thickness
+        ```
     """
     def __init__(self,theta=PI/3,ra=1.0,t=0.3):
         super().__init__()
@@ -336,7 +340,7 @@ class HexPrism(SObject):
     ```
     HexPrism(r=1.0,t=1.0)
     ```
-    hex prism of "radius" r and thickness t
+    Hex prism of "radius" r and thickness t
     """
     def __init__(self,r=1.0,t=1.0):
         super().__init__()
@@ -353,6 +357,7 @@ class TriPrism(SObject):
     ```
         TriPrism(r=1.0,h=1.0)
     ```
+    Triangular prism.
     """
     def __init__(self,r=1.0,h=1.0):
         super().__init__()
@@ -631,11 +636,58 @@ class Position(SObject):
         code_end = "}"
         return codestart+code+code_end
 
+class Bend(SObject):
+    """
+        ```
+        Bend(object,k=1.0)
+        ```
+        Bends object upwards along Y axis. `k` typically should be small, large values will distort the sdf too much.
+        Since the returned object is not a true sdf , shadows might look a bit off , however this is okay for generating
+        stl's
+    """
+    def __init__(self,sobject,k=1.0):
+        self.child = sobject 
+        self.k = k
+    def gen_glsl(self,p,tr):
+        k = glslfloat(self.k)
+        matvar = "mat_"+genvar()
+        cvar = "c_"+genvar()
+        svar = "s_"+genvar()
+        qvar = "q_"+genvar()
+        code = "{\n"
+        code += indentglsl(f"float {cvar} = cos({k}*{p}.x);\n")
+        code += indentglsl(f"float {svar} = sin({k}*{p}.x);\n")
+        code += indentglsl(f"mat2 {matvar} = mat2({cvar},-{svar},{svar},{cvar});\n")
+        code += indentglsl(f"vec3 {qvar} = vec3({matvar}*{p}.xy,{p}.z);\n")
+        code += indentglsl(f"{self.child.gen_glsl(qvar,tr)};\n")
+        code += "}"
+        return code
 
 class Twist(SObject):
-    def __init__(self,sobject,p,k=10.0):
-        c = cos(k*p[1]);
-        s = sin(k*p[1]);
+    """
+        ```
+        Twist(object,k=1.0)
+        ```
+        Twist object upwards along Y axis. large `k` values will distort the sdf.
+    """
+    def __init__(self,sobject,k=1.0):
+        self.child = sobject 
+        self.k = k
+    def gen_glsl(self,p,tr):
+        k = glslfloat(self.k)
+        matvar = "mat_"+genvar()
+        cvar = "c_"+genvar()
+        svar = "s_"+genvar()
+        qvar = "q_"+genvar()
+        code = "{\n"
+        code += indentglsl(f"float {cvar} = cos({k}*{p}.y);\n")
+        code += indentglsl(f"float {svar} = sin({k}*{p}.y);\n")
+        code += indentglsl(f"mat2 {matvar} = mat2({cvar},-{svar},{svar},{cvar});\n")
+        code += indentglsl(f"vec3 {qvar} = vec3({matvar}*{p}.xz,{p}.y);\n")
+        code += indentglsl(f"{self.child.gen_glsl(qvar,tr)};\n")
+        code += "}"
+        return code
+
 
 
 def makescenejson():
