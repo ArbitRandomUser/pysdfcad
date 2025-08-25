@@ -571,7 +571,7 @@ class Subtract(SObject):
         ```
             Subtract(obj1,obj2)
         ```
-        Subtract first 
+        Subtract obj2 from obj1 
     """
     def __init__(self,obj1,obj2,sm=False,k=0.1):
         super().__init__()
@@ -618,11 +618,13 @@ class Position(SObject):
         `mat` is a 4x4 matrix in homogeneous coordinates
         mat can technically be any linear transformation in homogenous coordinates
 
-        Helper functions like `rotx(theta)`, and `translate(x=0,y=0,z=0)`
+        Helper functions like `Rotx(theta)`, and `Translation(x=0,y=0,z=0)`
         are provided to construct it.
 
-        ex `Position(Sphere(1.0),rotx(PI/2) @ translate(z=3))`
+        ex `Position(Sphere(1.0),Rotx(PI/2) @ Translation(z=3))`
         will create a Sphere at the origin , translate it by 3 in z direction and then rotate along x axis by 90
+
+        a more direct way is to use `sobject.rotx(PI/2).translate(z=3)` to rotate and move `sobject`
     """
     def __init__(self,sobject,mat):
         print("running Position")
