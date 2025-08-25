@@ -1,45 +1,36 @@
+let pyodide;
 importScripts("https://cdn.jsdelivr.net/pyodide/v0.23.0/full/pyodide.js");
-let chunkcount = 0;
 async function loadPyodideAndPackages() {
-  //self.pyodide = await loadPyodide({fullStdLib: true});
   pyodide = await loadPyodide();
   console.log("pyodide loaded");
-  await self.pyodide.loadPackage(["numpy", "pytz"]);
-  await pyodide.runPython(await (await fetch("./assets/pycsg.py")).text());
+  await pyodide.loadPackage(["numpy", "pytz"]);
   self.postMessage({ type: 'pyodideready' }); // Notify App.svelte that Pyodide is ready    
 }
 let pyodideReadyPromise = loadPyodideAndPackages();
 
-function buildMinTree(shaders) {
-  if (!shaders || shaders.length === 0) {
-    return "0.0"; // Default for empty set
-  }
-  if (shaders.length === 1) {
-    return shaders[0];
-  }
-
-  const mid = Math.floor(shaders.length / 2);
-  const leftSide = buildMinTree(shaders.slice(0, mid));
-  const rightSide = buildMinTree(shaders.slice(mid));
-  return `min(${leftSide}, ${rightSide})`;
-}
-
-let trigcount=0;
 onmessage = async (event) => {
-  // make sure loading is done
-  chunkcount=0;
   await pyodideReadyPromise;
   try {
-    await pyodide.runPython("clearobjects()");
-    await pyodide.runPython(event.data);
+    if (event.data.run != "first"){
+      await pyodide.runPython("clearobjects()");
+    }
+    await pyodide.runPython(event.data.code);
     let results = await pyodide.runPython("makescenejson()");
-    res = JSON.parse(results);
-    midstring = res['shader']
-    
-    shaderstring = midstring;
-    //console.log(shaderstring);
+    let res = JSON.parse(results);
+    let midstring = res['shader']
+    let shaderstring = midstring;
     postMessage({ shaderstring: shaderstring });
   } catch (error) {
-    postMessage({ error: error.message });
+      const fullError = error.message;
+      let userError;
+      const execStartIndex = fullError.indexOf('File "<exec>"');
+      if (execStartIndex !== -1) {
+        userError = fullError.substring(execStartIndex);
+      } else {
+        const lines = fullError.split('\n').filter(line => line.trim() !== '');
+        userError = lines.pop() || "An unknown Python error occurred.";
+      }
+      console.log(fullError)
+      postMessage({ error: { message: userError } });
   }
 };

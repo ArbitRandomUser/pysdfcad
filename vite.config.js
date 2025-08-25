@@ -1,5 +1,8 @@
 import { defineConfig } from "vite";
+//import { viteStaticCopy } from "vite-plugin-static-copy";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -16,6 +19,7 @@ export default defineConfig({
 const config = {
   optimizeDeps: {
     exclude: [
+      "pyodide",
       "codemirror",
       "@codemirror/autocomplete",
       "@codemirror/commands",

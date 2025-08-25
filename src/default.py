@@ -2,7 +2,7 @@
 pos = 2.5 #some variable to space the objects
 
 #middle row
-# positioning rounding and scaling
+# positioning rounding and scaling...
 o1 = Box().scale(0.5).rounding(0.1).move(0,0,pos) 
 #subtractions, (3 cylinders removed from a box)
 o2 =  SmoothSubtract(Box(),
@@ -14,8 +14,8 @@ o3 = Octahedron().scale(0.8).rounding().move(0,0.5,-pos)
 
 #back row
 o4 = Cone().rounding().scale(0.8).rotx(PI).move(-pos,1,pos) 
-#intersection (smoothened intersection of a sphere and triangular
-#               prism)
+#intersection (smoothened intersection of a sphere
+#               and triangular prism)
 o5 = SmoothIntersect(Sphere().move(0,0.5,0),
                      TriPrism()
                      ).scale(0.8).move(-pos,0,-pos)

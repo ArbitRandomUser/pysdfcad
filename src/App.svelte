@@ -11,9 +11,11 @@
   import { generateSTL } from "./stlgenerator.js";
   import { runMarchingCubes } from "./marchingcubes.js";
   import defaultpython from "./default.py?raw"
+  import pycsg from "./assets/pycsg.py?raw"
   import { fade, slide } from 'svelte/transition';
 
-  let codestringpython = defaultpython 
+  let codestringpython = `${defaultpython}`
+  //let codestringpython = `${defaultpython}`
   let codestringshader = `
 float sdf(vec3 p){
  return 1e9;
@@ -38,26 +40,27 @@ float sdf(vec3 p){
       if (e.data.type === 'pyodideready'){
           console.log("pyodide is ready");
           pyodideready = true;
-          worker.postMessage(codestringpython);
+          worker.postMessage({run:"notfirst",code:codestringpython});
       } else if (e.data.shaderstring){
             codestringshader = e.data.shaderstring;
             errorMessage = ''; 
       } else if (e.data.error) {
-            errorMessage = e.data.error; 
+            errorMessage = e.data.error.message; 
       }
   };
 
   onMount(() => {
+      worker.postMessage({run:"first",code:pycsg});
   });
 
   function generate_shader(codestringpython) {
-      console.log(codestringpython);
-      errorMessage = ''; 
-    worker.postMessage(codestringpython);
+      //console.log(codestringpython);
+    worker.postMessage({run:"notfirst",code:codestringpython});
   }
 
   function reCompile() {
     console.log("Recompiling")
+    //console.log(codestringpython);
     generate_shader(codestringpython);
   }
 
@@ -86,12 +89,12 @@ float sdf(vec3 p){
         <div class="codemirror-wrapper">
             <CodeMirror bind:value={codestringpython} editable={pyodideready} lang={python()} theme={oneDark} />
         </div>
-        {#if errorMessage}
-          <div transition:slide class="error-message" style="color: red;">{errorMessage}</div>
-        {/if}
     </div>
     {/if}
     <div class="view-panel" class:editor-hidden={!editorVisible}>
+        {#if errorMessage}
+          <div transition:slide class="error-message" style="color: red;">{errorMessage}</div>
+        {/if}
         <Webglview codestring={codestringshader} />
         <div class="controls">
           <button on:click={reCompile} disabled={!pyodideready}> Recompile </button>
@@ -103,7 +106,8 @@ float sdf(vec3 p){
           <div class="loading-indicator"></div>
         {/if}
         </div>
-        Design stuff with python in your browser; 
+        Design stuff with python in your browser;<br>
+        Zoom and rotate camera with mouse (pan coming soon)<br> 
         STL generation is not high resolution for now (will be fixed);
     </div>
   </div>

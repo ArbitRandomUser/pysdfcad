@@ -717,15 +717,13 @@ class Twist(SObject):
         svar = "s_"+genvar()
         qvar = "q_"+genvar()
         code = "{\n"
-        code += indentglsl(f"float {cvar} = cos({k}*{p}.y);\n")
-        code += indentglsl(f"float {svar} = sin({k}*{p}.y);\n")
+        code += indentglsl(f"float {cvar} = cos({k}*{p}.z);\n")
+        code += indentglsl(f"float {svar} = sin({k}*{p}.z);\n")
         code += indentglsl(f"mat2 {matvar} = mat2({cvar},-{svar},{svar},{cvar});\n")
-        code += indentglsl(f"vec3 {qvar} = vec3({matvar}*{p}.xz,{p}.y);\n")
+        code += indentglsl(f"vec3 {qvar} = vec3({matvar}*{p}.xy,{p}.z);\n")
         code += indentglsl(f"{self.child.gen_glsl(qvar,tr)};\n")
         code += "}"
         return code
-
-
 
 def makescenejson():
     """
@@ -737,7 +735,7 @@ def makescenejson():
     retshader += indentglsl(retobj.gen_glsl('p','d_final'))
     retshader += indentglsl("return d_final;\n")
     retshader += "}"
-    print(retshader)
+    #print(retshader)
     ret = {'shader':retshader}
     return json.dumps(ret)
 

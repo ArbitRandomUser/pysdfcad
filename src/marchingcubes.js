@@ -76,7 +76,6 @@ export async function runMarchingCubes(sdf, resolution, boundingBox) {
             data[i * resolution * resolution + j] = halfFloatToFloat(sliceData[j]);
         }
     }
-    console.log("data",data)
     
     const df = (x, y, z) => {
         const bbox_size = [
@@ -128,11 +127,7 @@ export async function runMarchingCubes(sdf, resolution, boundingBox) {
         [boundingBox.min[0], boundingBox.min[1], boundingBox.min[2]],
         [boundingBox.max[0], boundingBox.max[1], boundingBox.max[2]]
     ];
-    console.log(data);
-    console.log(bounds);
-    console.log(df(1.0,1.0,1.0));
     var result = mc.marchingCubes(resolution, df, bounds);
-    console.log(result);
     return result;
 }
 
@@ -167,7 +162,7 @@ function createShader(gl, type, source) {
         return shader;
     }
     console.error('Shader compilation error in marchingcubes.js:');
-    console.log(gl.getShaderInfoLog(shader));
+    //console.log(gl.getShaderInfoLog(shader));
     gl.deleteShader(shader);
 }
 
