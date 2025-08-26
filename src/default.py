@@ -37,4 +37,7 @@ o7 = Displace(Sphere().move(pos,0,pos),
 o8 = Torus(t=0.1).twist(0.5).move(pos,0,0)
 #bend (a bent slab)
 o9 = Box([1,0.1,0.5]).bend(0.1).move(pos,0.5,-pos)
+
+
+#add all objects to the scene
 addobject(o1,o2,o3,o4,o5,o6,o7,o8,o9)
