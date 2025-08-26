@@ -13,8 +13,9 @@
   import defaultpython from "./default.py?raw"
   import pycsg from "./assets/pycsg.py?raw"
   import { fade, slide } from 'svelte/transition';
+  import pako from 'pako';
 
-  let codestringpython = `${defaultpython}`
+  let codestringpython = getCodeFromUrl() || localStorage.getItem('codestringpython') || `${defaultpython}`;
   //let codestringpython = `${defaultpython}`
   let codestringshader = `
 float sdf(vec3 p){
@@ -53,6 +54,10 @@ float sdf(vec3 p){
       worker.postMessage({run:"first",code:pycsg});
   });
 
+  $: if (codestringpython) {
+      localStorage.setItem('codestringpython', codestringpython);
+  }
+
   function generate_shader(codestringpython) {
       //console.log(codestringpython);
     worker.postMessage({run:"notfirst",code:codestringpython});
@@ -80,6 +85,35 @@ float sdf(vec3 p){
         alert("Please compile the code first to generate an SDF function.");
     }
   }
+
+  function getCodeFromUrl() {
+      console.log("doing pako");
+      try {
+        const hash = window.location.hash.substring(1);
+        if (hash) {
+          const decoded = atob(hash);
+          const decoded_b64 = atob(hash.replace(/_/g, '/').replace(/-/g, '+'));
+          const uint8array = Uint8Array.from(decoded, c => c.charCodeAt(0));
+          const decompressed = pako.inflate(uint8array, { to: 'string' });
+          return decompressed;
+        }
+      } catch (e) {
+        console.error("Failed to read code from URL", e);
+        return null;
+      }
+      return null;
+    }
+  
+    function generateShareableLink() {
+      const compressed = pako.deflate(codestringpython, { to: 'string' });
+      const encoded = btoa(compressed);
+      const url = `${window.location.origin}${window.location.pathname}#${encoded}`;
+      navigator.clipboard.writeText(url).then(() => {
+        alert('Shareable link copied to clipboard!');
+      }, () => {
+        alert('Failed to copy the link.');
+      });
+    }
 </script>
 
 <main>
@@ -97,11 +131,12 @@ float sdf(vec3 p){
         {/if}
         <Webglview codestring={codestringshader} />
         <div class="controls">
-          <button on:click={reCompile} disabled={!pyodideready}> Recompile </button>
           <button on:click={generateSTLFile} disabled={!pyodideready}>Generate STL</button>
           <button on:click={toggleEditor}>
           {#if editorVisible}Hide Editor{:else}Show Editor{/if}
         </button>
+        <button on:click={generateShareableLink}>Share</button>
+        <button on:click={reCompile} disabled={!pyodideready}> Recompile </button>
         {#if !pyodideready}
           <div class="loading-indicator"></div>
         {/if}

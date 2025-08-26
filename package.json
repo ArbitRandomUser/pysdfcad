@@ -24,6 +24,7 @@
     "codemirror": "^6.0.1",
     "gl-matrix": "^3.4.3",
     "marching-cubes-fast": "^0.0.172",
+    "pako": "^2.1.0",
     "svelte-codemirror-editor": "^1.1.0",
     "svelte-language-server": "^0.15.8"
   }
