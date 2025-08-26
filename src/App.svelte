@@ -171,7 +171,7 @@ float sdf(vec3 p){
         Design stuff with python in your browser;<br>
         Zoom and rotate camera with mouse (pan coming soon)<br> 
         STL generation is not high resolution for now (will be fixed)<br>
-        Proper docs coming soon, till then:<a href="https://github.com/ArbitRandomUser/pysdfcad/blob/69d6db9d7baab567258442b65bd681c0f6e3f1d4/src/assets/pycsg.py#L118" > you can check out the script here</a>
+        Proper docs coming soon, till then:<a href="https://github.com/ArbitRandomUser/pysdfcad/blob/b610e54f5cc992323894174f17e9897c6f729170/src/assets/pycsg.py#L118 " > you can check out the script here</a>
     </div>
   </div>
 </main>
