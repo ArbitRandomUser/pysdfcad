@@ -86,34 +86,61 @@ float sdf(vec3 p){
     }
   }
 
+  function uint8ArrayToBase64Url(bytes) {
+    let binary = '';
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary)
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '');
+  }
+
+  function base64UrlToUint8Array(base64) {
+    const padding = '='.repeat((4 - base64.length % 4) % 4);
+    const b64 = (base64 + padding)
+      .replace(/-/g, '+')
+      .replace(/_/g, '/');
+
+    const rawData = atob(b64);
+    const outputArray = new Uint8Array(rawData.length);
+
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  }
+  
   function getCodeFromUrl() {
-      console.log("doing pako");
-      try {
-        const hash = window.location.hash.substring(1);
-        if (hash) {
-          const decoded = atob(hash);
-          const decoded_b64 = atob(hash.replace(/_/g, '/').replace(/-/g, '+'));
-          const uint8array = Uint8Array.from(decoded, c => c.charCodeAt(0));
-          const decompressed = pako.inflate(uint8array, { to: 'string' });
-          return decompressed;
-        }
-      } catch (e) {
-        console.error("Failed to read code from URL", e);
-        return null;
+    try {
+      const hash = window.location.hash.substring(1);
+      if (hash && hash.length > 0) {
+        const uint8array = base64UrlToUint8Array(hash);
+        const decompressed = pako.inflate(uint8array, { to: 'string' });
+        return decompressed;
       }
+    } catch (e) {
+      console.error("Failed to read or decode code from URL hash.", e);
+      history.pushState("", document.title, window.location.pathname + window.location.search);
       return null;
     }
-  
-    function generateShareableLink() {
-      const compressed = pako.deflate(codestringpython, { to: 'string' });
-      const encoded = btoa(compressed);
-      const url = `${window.location.origin}${window.location.pathname}#${encoded}`;
-      navigator.clipboard.writeText(url).then(() => {
-        alert('Shareable link copied to clipboard!');
-      }, () => {
-        alert('Failed to copy the link.');
-      });
-    }
+    return null;
+  }
+
+  function generateShareableLink() {
+    const compressed = pako.deflate(codestringpython);
+    const encodedUrl = uint8ArrayToBase64Url(compressed);
+    const url = `${window.location.origin}${window.location.pathname}#${encodedUrl}`;
+    
+    navigator.clipboard.writeText(url).then(() => {
+      alert('Shareable link copied to clipboard!');
+    }, () => {
+      alert('Failed to copy the link.');
+    });
+  }
+
 </script>
 
 <main>
