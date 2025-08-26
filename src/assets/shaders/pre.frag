@@ -6,7 +6,7 @@ uniform vec3 lookat;
 uniform vec2 csize;
 uniform float focus;
 uniform float imgw;
-uniform vec2 mouse;
+//uniform vec2 mouse;
 
 //uniform Data {
 //  float data;

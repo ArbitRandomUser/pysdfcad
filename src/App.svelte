@@ -23,7 +23,7 @@ float sdf(vec3 p){
 `;
   let pyodideready = false;
   let errorMessage = ''; 
-  let editorVisible = true;
+  let editorVisible = false;
 
   function toggleEditor() {
     editorVisible = !editorVisible;
@@ -108,7 +108,8 @@ float sdf(vec3 p){
         </div>
         Design stuff with python in your browser;<br>
         Zoom and rotate camera with mouse (pan coming soon)<br> 
-        STL generation is not high resolution for now (will be fixed);
+        STL generation is not high resolution for now (will be fixed)<br>
+        Proper docs coming soon, till then:<a href="https://github.com/ArbitRandomUser/pysdfcad/blob/69d6db9d7baab567258442b65bd681c0f6e3f1d4/src/assets/pycsg.py#L118" > you can check out the script here</a>
     </div>
   </div>
 </main>

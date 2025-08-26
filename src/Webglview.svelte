@@ -15,8 +15,8 @@
   let piby180 = Math.PI / 180;
   let mousepos = [0, 0];
   let theta = 0.0; //*(3.1415/180);
-  let phi = 45.0; //*(3.1415/180);
-  let dist = 10.0;
+  let phi = 30.0; //*(3.1415/180);
+  let dist = 15.0;
   let focus = 1.0;
   let moving = false;
   let imgw = 1.0; //width of image plane, height derived from aspect ratio

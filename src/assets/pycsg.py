@@ -119,11 +119,11 @@ O=[0.0,0.0,0.0]
 class Sphere(SObject):
     """
         ```
-            Sphere(radius=1.0,pos=O)
+            Sphere(radius=1.0,pos=[0,0,0])
         ```
         generate Sphere, default position at origin
     """
-    def __init__(self,radius=1.0,pos=O):
+    def __init__(self,radius=1.0,pos=[0,0,0]):
         super().__init__()
         #print("running sphere")
         super().__init__()
@@ -384,11 +384,11 @@ class TriPrism(SObject):
 class Capsule(SObject):
     """
     ```
-    Capsule(st=O,en=(0,0,1),r=0.1))
+    Capsule(st=[0,0,0],en=(0,0,1),r=0.1))
     ```
     Capsule , starting at `st`, ending at `en` with radius `r`
     """
-    def __init__(self,a=O,b=(0,0,1),r=0.1):
+    def __init__(self,a=[0,0,0],b=(0,0,1),r=0.1):
         super().__init__()
         self.a=a
         self.b=b

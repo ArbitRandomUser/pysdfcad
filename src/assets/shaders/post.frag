@@ -1,18 +1,25 @@
 //sdf def comes before this
 precision highp float;
 #define MIN_HIT_DIST 0.0001
-#define MAX_HIT_DIST 1000.0
-#define NO_MARCH_STEPS 1000
+#define MAX_HIT_DIST 100.0
+#define NO_MARCH_STEPS 200
+
+//maybe too small increase if needed
+#define SHADOW_MARCH_STEPS 30 
+#define SHADOW_HIT_DIST 10.0
+
 #define PI 3.1415926535
 
+
 vec3 calcNormal(vec3  pos){ 
-    const float h = 0.001;      
-    #define ZERO (int(min(imgw,0.0))) // prevents loop unrolling 
+    const float h = 0.0001;      
+    // prevents loop unrolling 
+    #define ZERO (int(min(imgw,0.0)))
     vec3 n = vec3(0.0);
-    //following is from inigos websits
+    //following is from Inigo's websits
     //e iterates through [+-1,+-1,+-1] points on a tetrahedron 
     for( int i=ZERO; i<4; i++){ 
-        vec3 e = 0.5773*(2.0*vec3((((i+3)>>1)&1),((i>>1)&1),(i&1))-1.0);
+        vec3 e = 0.577350269*(2.0*vec3((((i+3)>>1)&1),((i>>1)&1),(i&1))-1.0);
         n += sdf(pos+e*h)*e;
     }
     return normalize(n);
@@ -36,7 +43,7 @@ vec4 ray_march(in vec3 ro, in vec3 rd){
 float softshadow(in vec3 ro, in vec3 rd, float k){
   float ret = 1.0;
   float td = 0.0;
-  for (int i=0;i<NO_MARCH_STEPS && td< MAX_HIT_DIST;i++) {
+  for (int i=0;i<SHADOW_MARCH_STEPS && td< SHADOW_HIT_DIST;i++) {
     float h = sdf(ro + td*rd);
     if (h<MIN_HIT_DIST)
       return 0.0;
@@ -86,14 +93,14 @@ void main(){
   #define ydir  vec3(0.0,1.0,0.0)
   #define zdir  vec3(0.0,0.0,1.0)
   vec2 vUV = ((gl_FragCoord.xy - csize/2.0)*imgw)/csize[0]; 
-  vec2 mUV = ((mouse.xy - csize/2.0)*imgw)/csize[0]; 
+  //vec2 mUV = ((mouse.xy - csize/2.0)*imgw)/csize[0]; 
   vec3 zproj = -1.0*normalize(lookat);
   vec3 yproj = normalize(ydir - dot(zproj,ydir)*zproj);
   vec3 xproj = normalize(cross(ydir,zproj));
 
   //camera and uv
   vec3 uv = camera + focus*normalize(lookat) + vUV.x*xproj + vUV.y*yproj;// vec3(vUV.xy,0.0)*vec3(1.0,1.0,0.0);
-  vec3 muv = camera + focus*normalize(lookat) + mUV.x*xproj + mUV.y*yproj;// vec3(vUV.xy,0.0)*vec3(1.0,1.0,0.0);
+  //vec3 muv = camera + focus*normalize(lookat) + mUV.x*xproj + mUV.y*yproj;// vec3(vUV.xy,0.0)*vec3(1.0,1.0,0.0);
    
   //march
   vec3 ro = camera;
@@ -137,21 +144,20 @@ void main(){
   if (gr.z <= marched && gr.z>0.0 && gr.z < 100.0){
     float thick;//thickness of grid
     float xythick=0.05;//size of axis markings 
-    float planeopacity=0.0;
+    float planeopacity=-0.000;
     if (abs(gr.x)<xythick || abs(gr.y)<xythick){
       thick = 0.0010*sqrt(gr.z);
     }
     else{
       thick = 0.0005*sqrt(gr.z);//,0.5);
     }
-    //TODO this might be very roundabout way of doing this , make it simpler later;
+    //this might be very roundabout way of doing this , make it simpler later;
     vec2 ll = 2.0-planeopacity-(smoothstep(vec2(-thick),vec2(0.0),(sin2(PI*gr.xy))) + smoothstep(vec2(0.0),vec2(thick),(sin2(PI*gr.xy))));
-    //ll.x and ll.y are 1 near grid lines (from -thick to +thich around grid lines), and 0 everywhere else.
     if (abs(gr.x)<=xythick){
-      col -= 2.0*vec3(0.20,1.0,1.0)*(ll.x+ll.y);
+      col -= 2.0*vec3(0.00,1.0,1.0)*(ll.x+ll.y);
     }
     else if (abs(gr.y)<=xythick){
-      col -= 2.0*vec3(1.0,0.20,1.0)*(ll.x+ll.y);
+      col -= 2.0*vec3(1.0,0.10,1.0)*(ll.x+ll.y);
     }
     else{
     col -= 10.0*(ll.x+ll.y);
