@@ -26,14 +26,12 @@ float box(vec3 p, vec3 b){
 }
 
 
-float torus( vec3 p, vec2 t )
-{
+float torus( vec3 p, vec2 t ){
   vec2 q = vec2(length(p.xz)-t.x,p.y);
   return length(q)-t.y;
 }
 
-float cappedtorus( vec3 p, vec2 sc, float ra, float rb)
-{
+float cappedtorus( vec3 p, vec2 sc, float ra, float rb){
   p.x = abs(p.x);
   float k = (sc.y*p.x>sc.x*p.y) ? dot(p.xy,sc) : length(p.xy);
   return sqrt( dot(p,p) + ra*ra - 2.0*ra*k ) - rb;
@@ -43,25 +41,21 @@ vec3 smoothclamp(vec3 x, vec3 a, vec3 b){
     return smoothstep(0., 1.0, (x - a)/(b - a))*(b - a) + a;
 }
 
-float link( vec3 p, float le, float r1, float r2 )
-{
+float link( vec3 p, float le, float r1, float r2 ){
   vec3 q = vec3( p.x, max(abs(p.y)-le,0.0), p.z );
   return length(vec2(length(q.xy)-r1,q.z)) - r2;
 }
 
-float infcylinder( vec3 p, vec3 c )
-{
+float infcylinder( vec3 p, vec3 c ){
   return length(p.xz-c.xy)-c.z;
 }
 
-float cylinder( vec3 p, float h, float r )
-{
+float cylinder( vec3 p, float h, float r ){
   vec2 d = abs(vec2(length(p.xz),p.y)) - vec2(r,h);
   return min(max(d.x,d.y),0.0) + length(max(d,0.0));
 }
 
-float cone( vec3 p, vec2 q)
-{
+float cone( vec3 p, vec2 q){
   vec2 w = vec2( length(p.xz), p.y );
   vec2 a = w - q*clamp( dot(w,q)/dot(q,q), 0.0, 1.0 );
   vec2 b = w - q*vec2( clamp( w.x/q.x, 0.0, 1.0 ), 1.0 );
@@ -71,16 +65,14 @@ float cone( vec3 p, vec2 q)
   return sqrt(d)*sign(s);
 }
 
-float infcone( vec3 p, vec2 c )
-{
+float infcone( vec3 p, vec2 c ){
     // c is the sin/cos of the angle
     vec2 q = vec2( length(p.xz), -p.y );
     float d = length(q-c*max(dot(q,c), 0.0));
     return d * ((q.x*c.y-q.y*c.x<0.0)?-1.0:1.0);
 }
 
-float cappedcone( vec3 p, float h, float r1, float r2 )
-{
+float cappedcone( vec3 p, float h, float r1, float r2 ){
   vec2 q = vec2( length(p.xz), p.y );
   vec2 k1 = vec2(r2,h);
   vec2 k2 = vec2(r2-r1,2.0*h);
@@ -90,8 +82,7 @@ float cappedcone( vec3 p, float h, float r1, float r2 )
   return s*sqrt( min(dot(ca,ca),dot(cb,cb)) );
 }
 
-float solidangle( vec3 p, vec2 c, float ra )
-{
+float solidangle( vec3 p, vec2 c, float ra ){
   // c is the sin/cos of the angle
   vec2 q = vec2( length(p.xz), p.y );
   float l = length(q) - ra;
@@ -99,8 +90,7 @@ float solidangle( vec3 p, vec2 c, float ra )
   return max(l,m*sign(c.y*q.x-c.x*q.y));
 }
 
-float octahedron( vec3 p, float s )
-{
+float octahedron( vec3 p, float s ){
   p = abs(p);
   float m = p.x+p.y+p.z-s;
   vec3 q;
@@ -113,14 +103,12 @@ float octahedron( vec3 p, float s )
   return length(vec3(q.x,q.y-s+k,q.z-k)); 
 }
 
-float plane( vec3 p, vec3 n, float h )
-{
+float plane( vec3 p, vec3 n, float h ){
   // n must be normalized
   return dot(p,n) + h;
 }
 
-float hexprism( vec3 p, vec2 h )
-{
+float hexprism( vec3 p, vec2 h ){
   const vec3 k = vec3(-0.8660254, 0.5, 0.57735);
   p = abs(p);
   p.xy -= 2.0*min(dot(k.xy, p.xy), 0.0)*k.xy;
@@ -130,21 +118,18 @@ float hexprism( vec3 p, vec2 h )
   return min(max(d.x,d.y),0.0) + length(max(d,0.0));
 }
 
-float triprism( vec3 p, vec2 h )
-{
+float triprism( vec3 p, vec2 h ){
   vec3 q = abs(p);
   return max(q.z-h.y,max(q.x*0.866025+p.y*0.5,-p.y)-h.x*0.5);
 }
 
-float capsule( vec3 p, vec3 a, vec3 b, float r )
-{
+float capsule( vec3 p, vec3 a, vec3 b, float r ){
   vec3 pa = p - a, ba = b - a;
   float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );
   return length( pa - ba*h ) - r;
 }
 
-vec3 softclamp(vec3 x, vec3 a, vec3 b)
-{
+vec3 softclamp(vec3 x, vec3 a, vec3 b){
     return smoothstep(0., 1., (2./3.)*(x - a)/(b - a) + (1./6.))*(b - a) + a;
 }
 

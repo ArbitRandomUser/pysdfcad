@@ -388,8 +388,10 @@ class Capsule(SObject):
     ```
     Capsule , starting at `st`, ending at `en` with radius `r`
     """
-    def __init__(self,a=[0,0,0],b=(0,0,1),r=0.1):
+    def __init__(self,a=(0,0,0),b=(0,0,1),r=0.1):
         super().__init__()
+        assert len(a)==3
+        assert len(b)==3
         self.a=a
         self.b=b
         self.r=r
@@ -437,7 +439,7 @@ class Elongate(SObject):
         hh = f"vec3({self.h[0]}, {self.h[1]}, {self.h[2]})"
         newcoord = "p"+genvar()
         code = "".join(["{//Elongate\n",
-                        indentglsl(f"vec3 {newcoord} = {pcoord} - clamp({pcoord},-{hh},{hh});\n"),
+                        indentglsl(f"vec3 {newcoord} = {pcoord} - clamp({pcoord},-({hh}),{hh});\n"),
                         indentglsl(f"{self.child.gen_glsl(newcoord,target_var)};\n"),
                         "}"])
         return code
@@ -456,7 +458,7 @@ class Rounding(SObject):
         r = glslfloat(self.r)
         code = "{//Rounding\n"
         code += indentglsl(f"{self.child.gen_glsl(p,tr)};\n")
-        code += indentglsl(f"{tr} = {tr}-{r};\n")
+        code += indentglsl(f"{tr} = {tr}-({r});\n")
         code += "}"
         return code
 
@@ -539,7 +541,7 @@ class Intersect(SObject):
 
     def gen_glsl(self,pcoord,target_var):
         k = glslfloat(self.k)
-        code = "{//Union\n"
+        code = "{//Intersect\n"
         if not self.children:
             return indentglsl(f"{target_var} = 1e9;")
         code+= indentglsl(f"{self.children[0].gen_glsl(pcoord,target_var)};\n")
@@ -581,7 +583,7 @@ class Subtract(SObject):
 
     def gen_glsl(self,pcoord,target_var):
         k = glslfloat(self.k)
-        code = "{//Union\n"
+        code = "{//Subtract\n"
         if not self.children:
             return indentglsl(f"{target_var} = 1e9;")
         code+= indentglsl(f"{self.children[0].gen_glsl(pcoord,target_var)};\n")
@@ -696,7 +698,7 @@ class Bend(SObject):
         code = "{\n"
         code += indentglsl(f"float {cvar} = cos({k}*{p}.x);\n")
         code += indentglsl(f"float {svar} = sin({k}*{p}.x);\n")
-        code += indentglsl(f"mat2 {matvar} = mat2({cvar},-{svar},{svar},{cvar});\n")
+        code += indentglsl(f"mat2 {matvar} = mat2({cvar},-({svar}),{svar},{cvar});\n")
         code += indentglsl(f"vec3 {qvar} = vec3({matvar}*{p}.xy,{p}.z);\n")
         code += indentglsl(f"{self.child.gen_glsl(qvar,tr)};\n")
         code += "}"
@@ -721,7 +723,7 @@ class Twist(SObject):
         code = "{\n"
         code += indentglsl(f"float {cvar} = cos({k}*{p}.z);\n")
         code += indentglsl(f"float {svar} = sin({k}*{p}.z);\n")
-        code += indentglsl(f"mat2 {matvar} = mat2({cvar},-{svar},{svar},{cvar});\n")
+        code += indentglsl(f"mat2 {matvar} = mat2({cvar},-({svar}),{svar},{cvar});\n")
         code += indentglsl(f"vec3 {qvar} = vec3({matvar}*{p}.xy,{p}.z);\n")
         code += indentglsl(f"{self.child.gen_glsl(qvar,tr)};\n")
         code += "}"
@@ -737,13 +739,11 @@ def makescenejson():
     retshader += indentglsl(retobj.gen_glsl('p','d_final'))
     retshader += indentglsl("return d_final;\n")
     retshader += "}"
-    #print(retshader)
     ret = {'shader':retshader}
     return json.dumps(ret)
 
 def clearobjects():
     global __all_objects__, __all_coords__,coordno,varno
-    print("objects and coords cleared")
     __all_objects__ = []
     varno=0
 

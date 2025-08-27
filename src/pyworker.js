@@ -3,7 +3,7 @@ importScripts("https://cdn.jsdelivr.net/pyodide/v0.23.0/full/pyodide.js");
 async function loadPyodideAndPackages() {
   pyodide = await loadPyodide();
   console.log("pyodide loaded");
-  await pyodide.loadPackage(["numpy", "pytz"]);
+  await pyodide.loadPackage(["numpy",]);
   self.postMessage({ type: 'pyodideready' }); // Notify App.svelte that Pyodide is ready    
 }
 let pyodideReadyPromise = loadPyodideAndPackages();
