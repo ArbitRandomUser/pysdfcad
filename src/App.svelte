@@ -169,8 +169,9 @@ float sdf(vec3 p){
         {/if}
         </div>
         Design stuff with python in your browser;<br>
-        Zoom and rotate camera with mouse (pan coming soon)<br> 
+        Click on "Show Editor" to edit the objects in the scene;<br>
         STL generation is not high resolution for now (will be fixed)<br>
+        Zoom and rotate camera with mouse (pan coming soon)<br> 
         Proper docs coming soon, till then:<a href="https://github.com/ArbitRandomUser/pysdfcad/blob/b610e54f5cc992323894174f17e9897c6f729170/src/assets/pycsg.py#L118 " > you can check out the script here</a>
     </div>
   </div>

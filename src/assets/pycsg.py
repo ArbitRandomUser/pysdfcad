@@ -627,7 +627,7 @@ class Position(SObject):
         a more direct way is to use `sobject.rotx(PI/2).translate(z=3)` to rotate and move `sobject`
     """
     def __init__(self,sobject,mat):
-        print("running Position")
+        #print("running Position")
         self.mat = mat
         self.child = sobject
 
