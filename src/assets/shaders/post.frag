@@ -108,7 +108,7 @@ void main(){
   vec4 marchres = ray_march(ro,rd);
   vec3 pos = marchres.yzw;  //current hit position 
   float marched = marchres.x;//distance to hit position
-  vec3 norm = calcNormal(ro+marched*rd);//normal at hit position
+  vec3 norm = calcNormal(pos);//normal at hit position
 
   //color, lighting and shadows
   vec3 mate = vec3(0.10);
@@ -125,7 +125,7 @@ void main(){
   float sky_diffuse = clamp(dot(norm,ydir),0.0,1.0);
   //float sky_shad = softshadow(pos+0.002*norm,ydir,4.0);
   float bou_diffuse = clamp(dot(norm,vec3(0.0,-1.0,0.0)),0.0,1.0);
-  float bou_shad = softshadow(pos+0.03*norm,-ydir,4.0);
+  //float bou_shad = softshadow(pos+0.03*norm,-ydir,4.0);
 
   //gradient sky
   vec3 col = vec3(0.65,0.75,0.9) - 0.9*vUV.y;
@@ -135,7 +135,7 @@ void main(){
     col += mate*SUNYELL * sun_diffuse * sun_shad;
     col += mate*MOONBLUE * moon_diffuse * moon_shad ;
     //col += mate*SKYBLUE * sky_diffuse * sky_shad; 
-    col += mate*BOUCOLOR * bou_diffuse * bou_shad;
+    col += mate*BOUCOLOR * bou_diffuse;// * bou_shad;
     col += vec3(0.1,0.1,0.1);
   }
 
