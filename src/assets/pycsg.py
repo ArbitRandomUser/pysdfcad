@@ -610,7 +610,6 @@ class SmoothSubtract(Subtract):
         super().__init__(*objlist,sm=True,k=k)
 
 
-
 class Position(SObject):
     """
         ```
@@ -618,20 +617,24 @@ class Position(SObject):
         ```
         Position an object by rotating it and tranlating it
         `mat` is a 4x4 matrix in homogeneous coordinates
-        mat can technically be any linear transformation in homogenous coordinates
+        mat can technically be any orthogonal linear transformation in homogenous coordinates
 
         Helper functions like `Rotx(theta)`, and `Translation(x=0,y=0,z=0)`
         are provided to construct it.
 
-        ex `Position(Sphere(1.0),Rotx(PI/2) @ Translation(z=3))`
-        will create a Sphere at the origin , translate it by 3 in z direction and then rotate along x axis by 90
+        ex `Position(Sphere(1.0), Translation(z=3) @ Rotx(PI/2))`
+        will create a Sphere at the origin , rotate along x axis by 90 and then translate it by 3 in z direction 
+        note the ordering, the last transformation comes to the left.
 
-        a more direct way is to use `sobject.rotx(PI/2).translate(z=3)` to rotate and move `sobject`
+        a more direct way is to use `sobject.translate(z=3).rotx(PI/2).` to rotate and move `sobject`
     """
     def __init__(self,sobject,mat):
-        #print("running Position")
-        self.mat = mat
-        self.child = sobject
+        if isinstance(sobject,Position): #if acting on a Position we fuse
+            self.child = sobject.child
+            self.mat = mat @ sobject.mat 
+        else:
+            self.child = sobject
+            self.mat = mat
 
     def gen_glsl(self,pcoord,target_var):
         matinv = np.linalg.inv(self.mat)
@@ -647,11 +650,13 @@ class Position(SObject):
         neatmatrix+=")"
         newcoord = f"p_{genvar()}"
         matvar = f"m_{genvar()}"
+
         code = ""
         code += f"mat4 {matvar} = {neatmatrix};\n"
         code += f"vec3 {newcoord} = ({matvar} * vec4({pcoord},1.0)).xyz;\n"
         code += f"{self.child.gen_glsl(newcoord,target_var)};\n" 
         code = indentglsl(code)
+
         codestart = "{//Position\n"
         code_end = "}"
         return codestart+code+code_end
@@ -740,6 +745,7 @@ def makescenejson():
     retshader += indentglsl("return d_final;\n")
     retshader += "}"
     ret = {'shader':retshader}
+    print(retshader)
     return json.dumps(ret)
 
 def clearobjects():
