@@ -39,23 +39,27 @@ export async function runMarchingCubes(sdf, resolution, boundingBox) {
     gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0 );
 
     const texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_3D, texture);
+    gl.bindTexture(gl.TEXTURE_2D, texture);
     
-    //gl.texImage3D(gl.TEXTURE_3D, 0, gl.RGBA16F, resolution, resolution, resolution, 0, gl.RGBA, gl.HALF_FLOAT, null);
-    //
-    gl.texImage3D(gl.TEXTURE_3D, 0, gl.R16F, resolution, resolution, resolution, 0, gl.RED, gl.HALF_FLOAT, null);
+    //gl.texImage3D(gl.TEXTURE_3D, 0, gl.R16F, resolution, resolution, resolution, 0, gl.RED, gl.HALF_FLOAT, null);
+    // gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    // gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    // gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    // gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    // gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
     
-    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.R16F, resolution, resolution, 0, gl.RED, gl.HALF_FLOAT, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
     const fb = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
     gl.viewport(0, 0, resolution, resolution);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 
-    const data = new Float16Array(resolution * resolution * resolution);
+    const data = new Float32Array(resolution * resolution * resolution);
     gl.useProgram(program);
     gl.bindVertexArray(vao);
     gl.uniform3f(resolutionLocation, resolution, resolution, resolution);
@@ -63,8 +67,7 @@ export async function runMarchingCubes(sdf, resolution, boundingBox) {
     gl.uniform3fv(bboxMaxLocation, boundingBox.max);
 
     for (let i = 0; i < resolution; i++) {
-        gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, texture, 0, i);
-        gl.uniform3f(sliceLocation, i / (resolution - 1), 0, 0);
+        gl.uniform1f(sliceLocation, i / (resolution - 1));
         gl.drawArrays(gl.TRIANGLES, 0, 6);
 
         //const sliceData = new Float32Array(resolution * resolution); 

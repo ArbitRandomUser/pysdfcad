@@ -75,7 +75,7 @@ float sdf(vec3 p){
   };
 
   async function generateSTLFile() {
-    const resolution = 128; 
+    const resolution = 256; 
     if (codestringshader) {
         const result = await runMarchingCubes(codestringshader, resolution, boundingBox);
         if (result) {
